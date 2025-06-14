@@ -7,12 +7,14 @@ import { signIn } from "next-auth/react";
 import { toast } from "react-toastify";
 import AuthLoginButton from "./AuthLoginButton";
 import { Eye, EyeOff } from "lucide-react";
+import Loader from "./Loader";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   // Load remembered email on mount
@@ -26,38 +28,48 @@ export default function SignInForm() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     if (!email || !password) {
       toast.error("Email and password are required");
+      setLoading(false); // Stop loader if validation fails
       return;
     }
+
     try {
       const res = await signIn("credentials", {
         redirect: false,
         email,
         password,
       });
+
       if (res?.ok) {
         toast.success("Login successful!");
+
         // Handle remember me
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
+
         setTimeout(() => {
-          router.push("/"); // redirect manually
-        }, 1000); // small delay so user can see the toast
+          router.push("/"); // Redirect after a short delay
+        }, 1000);
       } else {
         toast.error("Invalid email or password");
       }
     } catch (error) {
       console.log("error:::", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // Always stop loading at the end
     }
   };
 
   return (
     <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+      {loading && <Loader />}
       <h2 className="text-3xl font-bold mb-2">Sign In</h2>
       <p className="text-sm text-gray-400 mb-6">
         Manage your workspace seamlessly. Sign in to continue.

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import AuthLoginButton from "./AuthLoginButton";
 import { Eye, EyeOff } from "lucide-react";
+import Loader from "./Loader";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,24 +14,29 @@ export default function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true); // Start loader
 
     if (!email) {
       toast.error("Email is required");
+      setLoading(false);
       return;
     }
 
     if (!password || password.length < 6) {
       toast.error("Password must be at least 6 characters");
+      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
+      setLoading(false);
       return;
     }
 
@@ -39,22 +45,28 @@ export default function SignUpForm() {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
+
       if (res?.ok) {
         toast.success("Signup successful!");
         setTimeout(() => {
-          router.push("/signin"); // redirect manually
-        }, 1000); // small delay so user can see the toast
+          router.push("/signin");
+        }, 1000);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Signup failed");
       }
     } catch (error) {
       console.log("error::", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // Always stop loading at the end
     }
   };
 
   return (
     <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+      {loading && <Loader />}
       <h2 className="text-3xl font-bold mb-2">Sign Up</h2>
       <p className="text-sm text-gray-400 mb-6">
         Manage your workspace seamlessly. Create an account to continue.

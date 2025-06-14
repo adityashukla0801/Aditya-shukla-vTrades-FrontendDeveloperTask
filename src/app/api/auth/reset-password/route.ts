@@ -1,21 +1,32 @@
-// app/api/reset-password/route.ts
-import { getUsers } from "@/lib/store";
-import { writeFileSync } from "fs";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   const { email, newPassword } = await req.json();
 
-  const users = getUsers();
-  const index = users.findIndex((u) => u.email === email);
-
-  if (index === -1) {
-    return new Response(JSON.stringify({ error: "User not found" }), {
-      status: 404,
-    });
+  if (!email || !newPassword) {
+    return new Response(
+      JSON.stringify({ error: "Email and new password required" }),
+      {
+        status: 400,
+      }
+    );
   }
 
-  users[index].password = newPassword;
-  writeFileSync("data.json", JSON.stringify(users));
+  const { data, error } = await supabase
+    .from("users")
+    .update({ password: newPassword })
+    .eq("email", email)
+    .select("email")
+    .single();
+
+  if (error || !data) {
+    return new Response(
+      JSON.stringify({ error: "User not found or update failed" }),
+      {
+        status: 404,
+      }
+    );
+  }
 
   return Response.json({ message: "Password updated successfully" });
 }

@@ -6,45 +6,68 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import OtpInput from "./OtpInput";
+import Loader from "./Loader";
 
 export default function ForgotForm() {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState("send");
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const sendOtp = async () => {
-    const res = await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-      headers: { "Content-Type": "application/json" },
-    });
+    setLoading(true); // Start loader
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      setStep("verify");
-      toast.success(data.message);
-    } else toast.error(data.error);
+      const data = await res.json();
+      if (res.ok) {
+        setStep("verify");
+        toast.success(data.message);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // Stop loader
+    }
   };
 
   const verifyOtp = async () => {
-    const res = await fetch("/api/auth/verify-otp", {
-      method: "POST",
-      body: JSON.stringify({ email, otp }),
-      headers: { "Content-Type": "application/json" },
-    });
+    setLoading(true); // Start loader
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({ email, otp }),
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      toast.success(data.message);
-      setTimeout(() => {
-        router.push(`/new-password?email=${encodeURIComponent(data.email)}`);
-      }, 1000);
-    } else toast.error(data.error);
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message);
+        setTimeout(() => {
+          router.push(`/new-password?email=${encodeURIComponent(data.email)}`);
+        }, 1000);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // Stop loader
+    }
   };
 
   return (
     <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+      {loading && <Loader />}
       {step === "send" ? (
         <>
           <h2 className="text-3xl font-bold mb-2">Forgot Your Password?</h2>

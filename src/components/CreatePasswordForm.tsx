@@ -4,10 +4,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
+import Loader from "./Loader";
 
 export default function CreatePasswordForm() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
@@ -17,19 +19,23 @@ export default function CreatePasswordForm() {
 
   const handleReset = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true); // Start loading
 
     if (!newPassword || newPassword.length < 6) {
       toast.error("Password must be at least 6 characters");
+      setLoading(false);
       return;
     }
 
     if (!newPassword || !rePassword) {
       toast.error("Please fill out both password fields");
+      setLoading(false);
       return;
     }
 
     if (newPassword !== rePassword) {
       toast.error("Passwords do not match");
+      setLoading(false);
       return;
     }
 
@@ -51,11 +57,14 @@ export default function CreatePasswordForm() {
     } catch (error) {
       console.error("Reset error:", error);
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
   return (
     <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+      {loading && <Loader />}
       <h2 className="text-3xl font-bold mb-2">Create New Password</h2>
       <p className="text-sm text-gray-400 mb-6">
         Choose a strong and secure password to keep your account safe. Make sure

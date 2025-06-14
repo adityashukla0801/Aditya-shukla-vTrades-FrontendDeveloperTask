@@ -1,12 +1,17 @@
-import { addUser, getUser } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
-  if (getUser(email)) {
-    return new Response(JSON.stringify({ message: "User already exists" }), {
-      status: 409,
+
+  const { data, error } = await supabase
+    .from("users")
+    .insert([{ email, password }]);
+
+  if (error) {
+    return new Response(JSON.stringify({ message: error.message }), {
+      status: 500,
     });
   }
-  addUser({ email, password });
-  return Response.json({ message: "Signup successful" });
+
+  return Response.json({ message: "Signup successful", user: data });
 }

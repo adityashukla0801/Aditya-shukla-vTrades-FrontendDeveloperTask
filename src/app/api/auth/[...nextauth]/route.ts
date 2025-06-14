@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/store";
+import { supabase } from "@/lib/supabase";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -17,14 +17,26 @@ const handler = NextAuth({
     }),
     CredentialsProvider({
       name: "Credentials",
-      credentials: { email: {}, password: {} },
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials) {
-        console.log("credentials::", credentials);
-        const user = getUser(credentials!.email);
-        console.log("userStore::", user);
-        if (user && user.password === credentials!.password) {
-          return { id: user.email, email: user.email };
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const { data: user, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", credentials.email)
+          .single();
+
+        if (error || !user) return null;
+
+        // ⚠️ Optionally hash/compare password here in production
+        if (user.password === credentials.password) {
+          return { id: user.id, email: user.email };
         }
+
         return null;
       },
     }),
@@ -33,4 +45,5 @@ const handler = NextAuth({
     signIn: "/signin",
   },
 });
+
 export { handler as GET, handler as POST };
