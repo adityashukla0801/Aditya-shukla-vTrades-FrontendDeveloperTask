@@ -8,7 +8,9 @@ export default function SignUpPage() {
   return (
     <AuthLayout>
       <AuthImageSection />
-      <SignUpForm />
+      <div className="lg:w-[640px] flex justify-center items-center">
+        <SignUpForm />
+      </div>
     </AuthLayout>
   );
 }

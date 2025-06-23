@@ -8,7 +8,9 @@ export default function SignInPage() {
   return (
     <AuthLayout>
       <AuthImageSection />
-      <ForgotForm />
+      <div className="lg:w-[640px] flex justify-center items-center">
+        <ForgotForm />
+      </div>
     </AuthLayout>
   );
 }

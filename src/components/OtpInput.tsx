@@ -39,12 +39,13 @@ function OtpInput({ onComplete }: { onComplete?: (otp: string) => void }) {
             if (el) inputsRef.current[index] = el;
           }}
           type="text"
+          placeholder="0"
           inputMode="numeric"
           maxLength={1}
           value={digit}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(e, index)}
-          className="w-[46px] h-[48px] text-center text-white text-lg bg-[#1D1E26] border border-[#30303D] rounded-[10px] focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="w-[46px] h-[48px] text-center text-[#85898B80] text-[24px] font-[500] bg-[#1D1E26] border border-[#30303D] rounded-[10px] focus:outline-none focus:ring-2 focus:ring-purple-500"
         />
       ))}
     </div>

@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { toast } from "react-toastify";
+import Image from "next/image";
 import AuthLoginButton from "./AuthLoginButton";
 import { Eye, EyeOff } from "lucide-react";
 import Loader from "./Loader";
+import Modal from "./Modal";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,9 +16,12 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
-  // Load remembered email on mount
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
@@ -29,10 +33,15 @@ export default function SignInForm() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
 
-    if (!email || !password) {
-      toast.error("Email and password are required");
-      setLoading(false); // Stop loader if validation fails
+    const newErrors: typeof errors = {};
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setLoading(false);
       return;
     }
 
@@ -44,57 +53,77 @@ export default function SignInForm() {
       });
 
       if (res?.ok) {
-        toast.success("Login successful!");
-
-        // Handle remember me
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
 
-        setTimeout(() => {
-          router.push("/"); // Redirect after a short delay
-        }, 1000);
+        setShowModal(true); // Show success modal
       } else {
-        toast.error("Invalid email or password");
+        setErrors({ password: "Invalid email or password" });
       }
     } catch (error) {
-      console.log("error:::", error);
-      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+      setErrors({ password: "Something went wrong. Please try again." });
     } finally {
-      setLoading(false); // Always stop loading at the end
+      setLoading(false);
     }
   };
 
+  const closeModal = () => {
+    setShowModal(false);
+    router.push("/");
+  };
+
   return (
-    <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+    <div className="lg:w-[385px] lg:mt-0 mt-8 flex flex-col justify-center">
+      <Modal
+        show={showModal}
+        onClose={closeModal}
+        iconSrc="/Vector.svg"
+        title="Login Successful!"
+        description="You have successfully logged in. Redirecting to your dashboard..."
+        buttonLabel="Okay"
+      />
+
       {loading && <Loader />}
-      <h2 className="text-3xl font-bold mb-2">Sign In</h2>
-      <p className="text-sm text-gray-400 mb-6">
+
+      <h2 className="text-[32px] text-[#FFFFFF] font-semibold mb-2">Sign In</h2>
+      <p className="text-sm text-[#DADADA] font-normal mb-8">
         Manage your workspace seamlessly. Sign in to continue.
       </p>
 
       <form className="space-y-4" onSubmit={handleLogin}>
         {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-sm mb-1">
+        <div className="mb-8">
+          <label htmlFor="email" className="block text-xs mb-1 text-[#FFFFFF]">
             Email Address
           </label>
           <input
             id="email"
             type="email"
             placeholder="navinash@workhive.com"
-            className="w-full px-4 py-2 bg-[#1D1E26] border border-[#30303D] rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2"
-            required
+            className={`w-full px-4 py-2 bg-[#1D1E26] border ${
+              errors.email ? "border-red-500" : "border-[#30303D]"
+            } rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2 text-sm font-semibold h-[50px]`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          {errors.email && (
+            <p className="text-[#D33C43] text-xs mt-2 flex gap-2 items-center">
+              <Image src="/Warning.svg" alt="warning" width={18} height={18} />
+              {errors.email}
+            </p>
+          )}
         </div>
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm mb-1">
+          <label
+            htmlFor="password"
+            className="block text-xs mb-1 text-[#FFFFFF]"
+          >
             Password
           </label>
           <div className="relative">
@@ -102,36 +131,44 @@ export default function SignInForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="********"
-              className="w-full px-4 py-2 bg-[#1D1E26] border border-[#30303D] rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2"
-              required
+              className={`w-full px-4 py-2 bg-[#1D1E26] border ${
+                errors.password ? "border-red-500" : "border-[#30303D]"
+              } rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2 text-sm font-semibold h-[50px]`}
               onChange={(e) => setPassword(e.target.value)}
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
+              className="absolute inset-y-0 right-3 flex items-center text-[#FFFFFF] cursor-pointer"
             >
               {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
+
+          {errors.password && (
+            <p className="text-[#D33C43] text-xs mt-2 flex gap-2 items-center">
+              <Image src="/Warning.svg" alt="warning" width={18} height={18} />
+              {errors.password}
+            </p>
+          )}
+
           <div className="flex justify-between mt-2">
-            {/* Remember me */}
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="remember"
-                className="form-checkbox accent-purple-500"
+                className="form-checkbox accent-purple-500 w-[18px] h-[18px] rounded-[2px]"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm">
+              <label htmlFor="remember" className="text-xs text-[#FFFFFF]">
                 Remember me
               </label>
             </div>
             <div className="text-right mt-1">
               <Link
                 href="/forgot-password"
-                className="text-xs text-purple-400 hover:underline"
+                className="text-xs text-[#8854C0] font-semibold hover:underline"
               >
                 Forgot Password?
               </Link>
@@ -142,21 +179,26 @@ export default function SignInForm() {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-[#8854C0] hover:bg-purple-700 text-white py-2 rounded-[10px] mt-6 font-medium cursor-pointer"
+          className="w-full h-[50px] bg-[#8854C0] hover:bg-purple-700 text-base text-white py-2 rounded-[10px] mt-8 font-semibold cursor-pointer"
         >
           Sign In
         </button>
 
         {/* Divider */}
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-600"></div>
-          <span className="mx-2 text-sm text-gray-400">or</span>
-          <div className="flex-grow border-t border-gray-600"></div>
+        <div className="flex items-center my-8">
+          <div className="flex-grow border-t border-[#272727]"></div>
+          <span className="mx-2 text-sm text-white">or</span>
+          <div className="flex-grow border-t border-[#272727]"></div>
         </div>
+
         <AuthLoginButton />
-        <p className="text-sm text-center mt-4 text-gray-400">
+
+        <p className="text-xs text-center mt-4 text-[#DADADA]">
           Don’t have an account?{" "}
-          <Link href="/signup" className="text-purple-400 hover:underline">
+          <Link
+            href="/signup"
+            className="text-[#8854C0] font-semibold hover:underline"
+          >
             Sign Up
           </Link>
         </p>

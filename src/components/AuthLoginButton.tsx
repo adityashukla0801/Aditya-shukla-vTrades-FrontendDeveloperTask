@@ -8,7 +8,7 @@ function AuthLoginButton() {
       {/* Google Auth */}
       <button
         type="button"
-        className="w-full flex items-center justify-center bg-[#1D1E26] text-white border border-gray-600 py-2 rounded-[10px] mb-2 cursor-pointer"
+        className="w-full h-[54px] flex items-center justify-center bg-[#1D1E26] text-white border border-[#30303D] py-2 rounded-[10px] mb-6 cursor-pointer gap-2 text-sm"
         onClick={() => signIn("google", { callbackUrl: "/" })}
       >
         <Image
@@ -18,13 +18,13 @@ function AuthLoginButton() {
           height={20}
           className="mr-2"
         />
-        Sign Up with Google
+        Sign In with Google
       </button>
 
       {/* Microsoft Auth */}
       <button
         type="button"
-        className="w-full flex items-center justify-center bg-[#1D1E26] text-white border border-gray-600 py-2 rounded-[10px] cursor-pointer"
+        className="w-full h-[54px] flex items-center justify-center bg-[#1D1E26] text-white border border-[#30303D] py-2 rounded-[10px] mb-6 cursor-pointer gap-2 text-sm"
         onClick={() => signIn("azure-ad", { callbackUrl: "/" })}
       >
         <Image
@@ -34,7 +34,7 @@ function AuthLoginButton() {
           height={20}
           className="mr-2"
         />
-        Sign Up with Microsoft
+        Sign In with Microsoft
       </button>
     </>
   );

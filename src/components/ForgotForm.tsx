@@ -1,22 +1,29 @@
-// app/forgot-password/page.tsx
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "react-toastify";
-import OtpInput from "./OtpInput";
 import Loader from "./Loader";
+import Image from "next/image";
+import Modal from "./Modal";
+import VerifyOtp from "./VerifyOtp";
 
 export default function ForgotForm() {
   const [email, setEmail] = useState("");
-  const [step, setStep] = useState("send");
-  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("form");
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; otp?: string }>({});
   const router = useRouter();
 
   const sendOtp = async () => {
-    setLoading(true); // Start loader
+    setErrors({});
+    if (!email) {
+      setErrors({ email: "Email is required" });
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -25,88 +32,91 @@ export default function ForgotForm() {
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        setStep("verify");
-        toast.success(data.message);
+        setShowModal(true);
       } else {
-        toast.error(data.error);
+        setErrors({ email: data.error || "Failed to send OTP" });
       }
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      toast.error("Something went wrong. Please try again.");
+    } catch {
+      setErrors({ email: "Something went wrong. Please try again." });
     } finally {
-      setLoading(false); // Stop loader
+      setLoading(false);
     }
   };
 
-  const verifyOtp = async () => {
-    setLoading(true); // Start loader
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        body: JSON.stringify({ email, otp }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message);
-        setTimeout(() => {
-          router.push(`/new-password?email=${encodeURIComponent(data.email)}`);
-        }, 1000);
-      } else {
-        toast.error(data.error);
-      }
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false); // Stop loader
-    }
+  const closeModal = () => {
+    setShowModal(false);
+    setStep("verify");
   };
 
   return (
-    <div className="lg:w-1/2 w-full p-10 flex flex-col justify-center bg-[#1E1E24]">
+    <div className="lg:w-[385px] lg:mt-0 mt-8 flex flex-col justify-center">
       {loading && <Loader />}
-      {step === "send" ? (
+
+      <Modal
+        show={showModal}
+        onClose={closeModal}
+        iconSrc="/Frame.svg"
+        title="Link Sent Successfully!"
+        description="Check your inbox! We’ve sent you an email with instructions to reset your password."
+        buttonLabel="Okay"
+      />
+
+      {step === "form" ? (
         <>
-          <h2 className="text-3xl font-bold mb-2">Forgot Your Password?</h2>
-          <p className="text-sm text-gray-400 mb-6">
+          <h2 className="text-[32px] text-[#FFFFFF] font-semibold mb-2">
+            Forgot Your Password?
+          </h2>
+          <p className="text-sm text-[#DADADA] font-normal mb-10">
             Don’t worry! Enter your email address, and we’ll send you a link to
             reset it.
           </p>
 
           <div className="space-y-4">
-            {/* Email */}
             <div>
-              <label htmlFor="forgot-email" className="block text-sm mb-1">
+              <label
+                htmlFor="forgot-email"
+                className="block text-xs mb-1 text-[#FFFFFF]"
+              >
                 Email Address
               </label>
               <input
                 id="forgot-email"
                 type="email"
                 placeholder="navinash@workhive.com"
-                className="w-full px-4 py-2 bg-[#1D1E26] border border-[#30303D] rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2"
-                required
+                value={email}
+                className={`w-full px-4 py-2 bg-[#1D1E26] border ${
+                  errors.email ? "border-[#D33C43]" : "border-[#30303D]"
+                } rounded-[10px] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 mt-2 text-sm font-semibold h-[50px]`}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              {errors.email && (
+                <p className="text-[#D33C43] text-xs mt-2 flex gap-2 items-center">
+                  <Image
+                    src="/Warning.svg"
+                    alt="warning"
+                    width={18}
+                    height={18}
+                  />
+                  {errors.email}
+                </p>
+              )}
             </div>
 
-            {/* Submit */}
             <button
               onClick={sendOtp}
-              type="submit"
-              className="w-full bg-[#8854C0] hover:bg-purple-700 text-white py-2 rounded-[10px] mt-6 font-medium cursor-pointer"
+              type="button"
+              className="w-full h-[50px] bg-[#8854C0] hover:bg-purple-700 text-base text-white py-2 rounded-[10px] mt-8 font-semibold cursor-pointer"
             >
               Submit
             </button>
 
-            {/* Back to sign in */}
-            <p className="text-sm mt-4 text-center text-gray-400">
+            <p className="text-xs text-center mt-4 text-[#DADADA]">
               Remembered your password?{" "}
               <Link
                 href="/signin"
-                className="text-xs text-purple-400 hover:underline"
+                className="text-[#8854C0] font-semibold hover:underline"
               >
                 Back to Sign In
               </Link>
@@ -114,28 +124,16 @@ export default function ForgotForm() {
           </div>
         </>
       ) : (
-        <>
-          <h2 className="text-3xl font-bold mb-2">Enter OTP</h2>
-          <p className="text-sm text-gray-400 mb-6">
-            Enter the OTP that we have sent to your email address
-            {email}
-          </p>
-          <div
-            onClick={() => setStep("send")}
-            className="text-xs text-purple-400 hover:underline mb-4 cursor-pointer"
-          >
-            Change Email Address
-          </div>
-
-          <OtpInput onComplete={(value) => setOtp(value)} />
-          <button
-            onClick={verifyOtp}
-            type="submit"
-            className="w-full bg-[#8854C0] hover:bg-purple-700 text-white py-2 rounded-[10px] mt-6 font-medium cursor-pointer"
-          >
-            Continue
-          </button>
-        </>
+        <VerifyOtp
+          email={email}
+          setStep={setStep}
+          onSuccess={(verifiedEmail) =>
+            router.push(
+              `/new-password?email=${encodeURIComponent(verifiedEmail)}`
+            )
+          }
+          onResend={sendOtp}
+        />
       )}
     </div>
   );

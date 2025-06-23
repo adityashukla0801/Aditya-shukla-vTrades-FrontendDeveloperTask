@@ -9,9 +9,11 @@ export default function NewPasswordPage() {
   return (
     <AuthLayout>
       <AuthImageSection />
-      <Suspense>
-        <CreatePasswordForm />
-      </Suspense>
+      <div className="lg:w-[640px] flex justify-center items-center">
+        <Suspense>
+          <CreatePasswordForm />
+        </Suspense>
+      </div>
     </AuthLayout>
   );
 }
