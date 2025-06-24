@@ -68,7 +68,6 @@ export default function VerifyOtp({
 
   return (
     <div>
-      {loading && <Loader />}
       <h2 className="text-[32px] text-[#FFFFFF] font-semibold mb-2">
         Enter OTP
       </h2>
@@ -107,10 +106,15 @@ export default function VerifyOtp({
       <button
         onClick={verifyOtp}
         type="submit"
-        className="w-full h-[50px] bg-[#8854C0] hover:bg-purple-700 text-base text-white py-2 rounded-[10px] mt-10 font-semibold cursor-pointer"
+        className="w-full h-[50px] bg-[#8854C0] hover:bg-purple-700 text-base text-white py-2 rounded-[10px] mt-10 mb-4 font-semibold cursor-pointer"
       >
         Continue
       </button>
+      {loading && (
+        <div className="flex items-center justify-center">
+          <Loader />
+        </div>
+      )}
     </div>
   );
 }

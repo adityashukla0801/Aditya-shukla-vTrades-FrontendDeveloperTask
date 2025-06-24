@@ -82,7 +82,6 @@ export default function CreatePasswordForm() {
         description="Your password has been successfully updated. You can now use your new password to log in."
         buttonLabel="Okay"
       />
-      {loading && <Loader />}
       <h2 className="text-[32px] text-[#FFFFFF] font-semibold mb-2">
         Create New Password
       </h2>
@@ -177,6 +176,11 @@ export default function CreatePasswordForm() {
         >
           Update Password
         </button>
+        {loading && (
+          <div className="flex items-center justify-center">
+            <Loader />
+          </div>
+        )}
       </form>
     </div>
   );

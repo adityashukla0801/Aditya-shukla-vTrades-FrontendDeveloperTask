@@ -9,6 +9,7 @@ import Loader from "./Loader";
 import Modal from "./Modal";
 import Image from "next/image";
 import VerifyOtp from "./VerifyOtp";
+import { div } from "framer-motion/client";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -81,7 +82,6 @@ export default function SignUpForm() {
 
   return (
     <div className="lg:w-[385px] lg:mt-0 mt-8 flex flex-col justify-center">
-      {loading && <Loader />}
       <Modal
         show={showModal}
         onClose={closeModal}
@@ -223,6 +223,11 @@ export default function SignUpForm() {
             >
               Sign Up
             </button>
+            {loading && (
+              <div className="flex items-center justify-center">
+                <Loader />
+              </div>
+            )}
 
             {/* Divider */}
             <div className="flex items-center my-8">

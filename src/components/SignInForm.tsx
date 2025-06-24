@@ -87,8 +87,6 @@ export default function SignInForm() {
         buttonLabel="Okay"
       />
 
-      {loading && <Loader />}
-
       <h2 className="text-[32px] text-[#FFFFFF] font-semibold mb-2">Sign In</h2>
       <p className="text-sm text-[#DADADA] font-normal mb-8">
         Manage your workspace seamlessly. Sign in to continue.
@@ -183,6 +181,11 @@ export default function SignInForm() {
         >
           Sign In
         </button>
+        {loading && (
+          <div className="flex items-center justify-center">
+            <Loader />
+          </div>
+        )}
 
         {/* Divider */}
         <div className="flex items-center my-8">

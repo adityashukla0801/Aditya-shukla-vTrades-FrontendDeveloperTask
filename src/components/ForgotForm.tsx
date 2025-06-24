@@ -52,8 +52,6 @@ export default function ForgotForm() {
 
   return (
     <div className="lg:w-[385px] lg:mt-0 mt-8 flex flex-col justify-center">
-      {loading && <Loader />}
-
       <Modal
         show={showModal}
         onClose={closeModal}
@@ -111,6 +109,11 @@ export default function ForgotForm() {
             >
               Submit
             </button>
+            {loading && (
+              <div className="flex items-center justify-center">
+                <Loader />
+              </div>
+            )}
 
             <p className="text-xs text-center mt-4 text-[#DADADA]">
               Remembered your password?{" "}
