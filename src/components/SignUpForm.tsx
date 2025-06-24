@@ -9,7 +9,6 @@ import Loader from "./Loader";
 import Modal from "./Modal";
 import Image from "next/image";
 import VerifyOtp from "./VerifyOtp";
-import { div } from "framer-motion/client";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
