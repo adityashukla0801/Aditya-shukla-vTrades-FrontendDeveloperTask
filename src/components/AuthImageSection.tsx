@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AuthImageSection() {
   return (
-    <div className="relative lg:h-[944px] lg:w-[720px] w-full h-full">
+    <div className="relative w-full lg:w-[720px] flex-shrink-0 lg:min-h-[720px] lg:h-full h-[75%] lg:max-h-[944px]">
       <Image
         src="/signup.jpg"
         alt="Team working"
