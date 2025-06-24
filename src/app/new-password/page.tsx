@@ -9,7 +9,7 @@ export default function NewPasswordPage() {
   return (
     <AuthLayout>
       <AuthImageSection />
-      <div className="lg:w-[640px] flex justify-center items-center">
+      <div className="lg:w-[640px] flex justify-center items-center lg:min-h-[720px] lg:h-full h-full lg:max-h-[944px]">
         <Suspense>
           <CreatePasswordForm />
         </Suspense>
